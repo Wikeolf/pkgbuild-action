@@ -20,6 +20,21 @@ useradd builder -m
 # Give user `builder` passwordless sudo access
 echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
+if [ -n "${INPUT_CCACHEENABLE:-}" ]; then
+	pacman -Syu --noconfirm --needed ccache
+	# Enable ccache for makepkg
+	sed -i 's/!\(ccache\)/\1/' /etc/makepkg.conf
+
+	# Configure ccache dir
+	sudo -H -u builder bash -c '[ ! -d ~/.config/ccache ] && mkdir -p ~/.config/ccache'
+	sudo -H -u builder bash -c 'echo "cache_dir = /github/workspace/.ccache" >> ~/.config/ccache/ccache.conf'
+	mkdir -p /github/workspace/.ccache
+
+	# Print ccache stats
+	sudo -H -u builder ccache -s -v
+fi
+
+
 # Give all users (particularly builder) full access to these files
 chmod -R a+rw .
 
@@ -63,6 +78,11 @@ sudo -H -u builder makepkg --syncdeps --noconfirm ${INPUT_MAKEPKGARGS:-}
 # Get array of packages to be built
 mapfile -t PKGFILES < <( sudo -u builder makepkg --packagelist )
 echo "Package(s): ${PKGFILES[*]}"
+
+# Print ccache stats after build
+if [ -z "${INPUT_CCACHEENABLE:-}" ]; then
+	sudo -H -u builder ccache -s -v
+fi
 
 # Report built package archives
 i=0
