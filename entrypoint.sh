@@ -41,6 +41,21 @@ chmod -R a+rw .
 BASEDIR="$PWD"
 cd "${INPUT_PKGDIR:-.}"
 
+if [ -n "${INPUT_AUTOCFG:-}" ]; then
+	pacman -S --noconfirm --needed pacman-contrib
+	# patch updkpgsums to fix permissions problem
+	sed -i 's/if ! cat -- "$newbuildfile" >"$buildfile"; then/if ! cp "$newbuildfile" "$buildfile"; then/' /usr/bin/updpkgsums
+	
+	# Update the PKGBUILD checksums
+	echo "Update PKGBUILD checksums"
+	sudo -H -u builder updpkgsums
+
+	# Generate the .SRCINFO file
+	echo "Generate .SRCINFO"
+	sudo -H -u builder makepkg --printsrcinfo > .SRCINFO.expected
+	sudo -H -u builder mv .SRCINFO.expected .SRCINFO
+fi
+
 # Assume that if .SRCINFO is missing then it is generated elsewhere.
 # AUR checks that .SRCINFO exists so a missing file can't go unnoticed.
 if [ -f .SRCINFO ] && ! sudo -u builder makepkg --printsrcinfo | diff - .SRCINFO; then

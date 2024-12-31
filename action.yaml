@@ -33,6 +33,10 @@ inputs:
     description: "Enable ccache if nonempty. ccachedir is set to /home/runner/reponame/reponame/.ccache"
     required: false
     default: ""
+  autoCfg:
+    description: "Automatically configure the operation after modifying PKGBUILD so that PKGBUILD can be built. if nonempty."
+    required: false
+    default: ""
 outputs:
   pkgfile0:
     description: "Filename of the first generated package archive. Usually only one."
