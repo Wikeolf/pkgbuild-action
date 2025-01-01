@@ -52,8 +52,8 @@ if [ -n "${INPUT_AUTOCFG:-}" ]; then
 
 	# Generate the .SRCINFO file
 	echo "Generate .SRCINFO"
-	sudo -H -u builder makepkg --printsrcinfo > .SRCINFO.expected
-	sudo -H -u builder mv .SRCINFO.expected .SRCINFO
+	sudo -H -u builder makepkg --printsrcinfo > /tmp/.SRCINFO
+	mv /tmp/.SRCINFO .SRCINFO
 fi
 
 # Assume that if .SRCINFO is missing then it is generated elsewhere.
